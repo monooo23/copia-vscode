@@ -19,7 +19,7 @@
 
   <rect x="32" y="32" width="448" height="448" rx="108" fill="url(#bg)"/>
 
-  <g filter="url(#shadow)">
+  <g filter="url(#shadow)" transform="translate(8 0)">
     <path
       d="M331 179C310 161.667 284.667 153 255 153C192.592 153 142 203.592 142 266C142 328.408 192.592 379 255 379C284.667 379 310 370.333 331 353"
       stroke="white"

@@ -1,6 +1,7 @@
 import * as path from "node:path";
 import * as vscode from "vscode";
 
+import { buildWorkspaceRelativePath, normalizePath } from "./pathing";
 import {
   buildCodeFence,
   buildLineReference,
@@ -174,7 +175,12 @@ export function getDisplayPath(uri: vscode.Uri, options?: PathOptions): string {
 
   if (workspaceFolder) {
     const relative = normalizePath(path.relative(workspaceFolder.uri.fsPath, uri.fsPath));
-    return relative || path.basename(uri.fsPath);
+    return buildWorkspaceRelativePath(
+      relative,
+      path.basename(uri.fsPath),
+      workspaceFolder.name,
+      (vscode.workspace.workspaceFolders?.length ?? 0) > 1,
+    );
   }
 
   return normalizePath(uri.fsPath);
@@ -188,15 +194,16 @@ export function getPathReference(uri: vscode.Uri, options?: PathOptions): string
   const workspaceFolder = vscode.workspace.getWorkspaceFolder(uri);
 
   if (workspaceFolder) {
-    const relative = normalizePath(path.relative(workspaceFolder.uri.fsPath, uri.fsPath));
-    return `@/${relative || path.basename(uri.fsPath)}`;
+    const relativePath = buildWorkspaceRelativePath(
+      normalizePath(path.relative(workspaceFolder.uri.fsPath, uri.fsPath)),
+      path.basename(uri.fsPath),
+      workspaceFolder.name,
+      (vscode.workspace.workspaceFolders?.length ?? 0) > 1,
+    );
+    return `@/${relativePath}`;
   }
 
   return normalizePath(uri.fsPath);
-}
-
-function normalizePath(value: string): string {
-  return value.replace(/\\/g, "/");
 }
 
 function toReferenceContext(context: LocationContext) {
