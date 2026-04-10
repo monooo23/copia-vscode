@@ -1,0 +1,282 @@
+{
+  "name": "copia-vscode",
+  "displayName": "Copia",
+  "description": "Copy for AI from VS Code selections, diagnostics, and resources.",
+  "version": "0.0.1",
+  "publisher": "sharten",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/monooo23/copia-vscode.git"
+  },
+  "icon": "media/icon.png",
+  "engines": {
+    "vscode": "^1.115.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Copia",
+      "properties": {
+        "copia.maxCodeLines": {
+          "type": "integer",
+          "default": 5,
+          "minimum": 0,
+          "description": "Maximum number of code lines included in Copy Context and Copy Diagnostic + Code. Set to 0 to disable truncation."
+        },
+        "copia.pathStyle": {
+          "type": "string",
+          "enum": [
+            "workspaceRelative",
+            "absolute"
+          ],
+          "default": "workspaceRelative",
+          "markdownEnumDescriptions": [
+            "Use workspace-relative paths when possible. `Copy Context` keeps the `@/` prefix for workspace files.",
+            "Always use absolute filesystem paths."
+          ],
+          "description": "Controls how Copia renders file paths."
+        },
+        "copia.enableSelectionCodeLens": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show CodeLens shortcuts for the current text selection."
+        },
+        "copia.enableDiagnosticCodeLens": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show CodeLens shortcuts on lines that contain diagnostics."
+        },
+        "copia.showDiagnosticCodeLensMessage": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show a shortened diagnostic message to the right of the diagnostic CodeLens action."
+        },
+        "copia.diagnosticCodeLensSeverity": {
+          "type": "string",
+          "enum": [
+            "error",
+            "errorAndWarning",
+            "all"
+          ],
+          "default": "errorAndWarning",
+          "markdownEnumDescriptions": [
+            "Show diagnostic CodeLens only for errors.",
+            "Show diagnostic CodeLens for errors and warnings.",
+            "Show diagnostic CodeLens for all diagnostics, including info and hints."
+          ],
+          "description": "Controls which diagnostics are eligible to show the CodeLens shortcut."
+        },
+        "copia.singleLineReferenceTemplate": {
+          "type": "string",
+          "default": "file: ${pathRef}#L${startLine}",
+          "description": "Template for single-line references. Supported placeholders: ${path}, ${pathRef}, ${startLine}, ${endLine}, ${startColumn}, ${endColumn}, ${startChar}, ${endChar}."
+        },
+        "copia.lineRangeReferenceTemplate": {
+          "type": "string",
+          "default": "file: ${pathRef}#L${startLine}-L${endLine}",
+          "description": "Template for multi-line references. Supported placeholders: ${path}, ${pathRef}, ${startLine}, ${endLine}, ${startColumn}, ${endColumn}, ${startChar}, ${endChar}."
+        },
+        "copia.charRangeReferenceTemplate": {
+          "type": "string",
+          "default": "file: ${pathRef}#L${startLine}:${startColumn}-L${endLine}:${endColumn}",
+          "description": "Template for character-range references. Supported placeholders: ${path}, ${pathRef}, ${startLine}, ${endLine}, ${startColumn}, ${endColumn}, ${startChar}, ${endChar}."
+        },
+        "copia.quickCopyActiveMode": {
+          "type": "string",
+          "enum": [
+            "singleLine",
+            "lineRange",
+            "charRange",
+            "context"
+          ],
+          "default": "lineRange",
+          "markdownEnumDescriptions": [
+            "Copy the active line reference only.",
+            "Copy the selected line range, or the current line when there is no selection.",
+            "Copy the exact character range, or the full current line range when there is no selection.",
+            "Copy the active reference plus a code block. Uses the current selection, or the current line when there is no selection."
+          ],
+          "description": "Controls what `Copia: Quick Copy Active Reference` copies."
+        }
+      }
+    },
+    "submenus": [
+      {
+        "id": "quickCopy.editorSubmenu",
+        "label": "Copia"
+      },
+      {
+        "id": "quickCopy.resourceSubmenu",
+        "label": "Copia"
+      }
+    ],
+    "commands": [
+      {
+        "command": "quickCopy.copyFileName",
+        "title": "Copy File Name",
+        "category": "Copia"
+      },
+      {
+        "command": "quickCopy.copyRelativePath",
+        "title": "Copy Relative Path",
+        "category": "Copia"
+      },
+      {
+        "command": "quickCopy.copyAbsolutePath",
+        "title": "Copy Absolute Path",
+        "category": "Copia"
+      },
+      {
+        "command": "quickCopy.copySelection",
+        "title": "Copy Selection",
+        "category": "Copia",
+        "enablement": "quickCopy.canCopySelectionContext"
+      },
+      {
+        "command": "quickCopy.copyPathWithLines",
+        "title": "Copy Path + Lines",
+        "category": "Copia",
+        "enablement": "quickCopy.canCopySelectionContext"
+      },
+      {
+        "command": "quickCopy.copyPathWithLinesAndChars",
+        "title": "Copy Path + Lines + Chars",
+        "category": "Copia",
+        "enablement": "quickCopy.canCopySelectionContext"
+      },
+      {
+        "command": "quickCopy.copyContext",
+        "title": "Copy Context",
+        "category": "Copia",
+        "enablement": "quickCopy.canCopySelectionContext"
+      },
+      {
+        "command": "quickCopy.quickCopyActiveReference",
+        "title": "Quick Copy Active Reference",
+        "category": "Copia"
+      },
+      {
+        "command": "quickCopy.copyDiagnostic",
+        "title": "Copy Diagnostic",
+        "category": "Copia",
+        "enablement": "quickCopy.canCopyDiagnosticContext"
+      },
+      {
+        "command": "quickCopy.copyDiagnosticWithCode",
+        "title": "Copy Diagnostic + Code",
+        "category": "Copia",
+        "enablement": "quickCopy.canCopyDiagnosticContext"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "submenu": "quickCopy.editorSubmenu",
+          "group": "9_cutcopypaste",
+          "when": "resourceScheme == file && editorTextFocus"
+        }
+      ],
+      "quickCopy.editorSubmenu": [
+        {
+          "command": "quickCopy.copyFileName",
+          "group": "1_core",
+          "when": "resourceScheme == file"
+        },
+        {
+          "command": "quickCopy.copyRelativePath",
+          "group": "1_core",
+          "when": "resourceScheme == file"
+        },
+        {
+          "command": "quickCopy.copyAbsolutePath",
+          "group": "1_core",
+          "when": "resourceScheme == file"
+        },
+        {
+          "command": "quickCopy.copySelection",
+          "group": "2_selection",
+          "when": "quickCopy.canCopySelectionContext"
+        },
+        {
+          "command": "quickCopy.copyPathWithLines",
+          "group": "2_selection",
+          "when": "quickCopy.canCopySelectionContext"
+        },
+        {
+          "command": "quickCopy.copyPathWithLinesAndChars",
+          "group": "2_selection",
+          "when": "quickCopy.canCopySelectionContext"
+        },
+        {
+          "command": "quickCopy.copyContext",
+          "group": "2_selection",
+          "when": "quickCopy.canCopySelectionContext"
+        },
+        {
+          "command": "quickCopy.copyDiagnostic",
+          "group": "3_diagnostic",
+          "when": "quickCopy.canCopyDiagnosticContext"
+        },
+        {
+          "command": "quickCopy.copyDiagnosticWithCode",
+          "group": "3_diagnostic",
+          "when": "quickCopy.canCopyDiagnosticContext"
+        }
+      ],
+      "explorer/context": [
+        {
+          "submenu": "quickCopy.resourceSubmenu",
+          "group": "4_cutcopypaste",
+          "when": "explorerViewletVisible && resourceScheme == file"
+        }
+      ],
+      "scm/resourceState/context": [
+        {
+          "submenu": "quickCopy.resourceSubmenu",
+          "group": "4_quickcopy"
+        }
+      ],
+      "quickCopy.resourceSubmenu": [
+        {
+          "command": "quickCopy.copyFileName",
+          "group": "1_core"
+        },
+        {
+          "command": "quickCopy.copyRelativePath",
+          "group": "1_core"
+        },
+        {
+          "command": "quickCopy.copyAbsolutePath",
+          "group": "1_core"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "quickCopy.quickCopyActiveReference",
+        "key": "alt+l",
+        "mac": "alt+l",
+        "when": "editorTextFocus && resourceScheme == file"
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "test": "npm run compile && node --test test/**/*.test.mjs",
+    "watch": "tsc -watch -p ./",
+    "check": "tsc -p ./ --noEmit",
+    "vscode:prepublish": "npm run compile"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.2",
+    "@types/vscode": "^1.115.0",
+    "typescript": "^6.0.2"
+  }
+}
