@@ -3,6 +3,7 @@ import * as path from "node:path";
 
 import { QuickCopyCodeLensProvider } from "./codelens";
 import {
+  clearDiagnosticCodeLensCache,
   copyDiagnosticContext,
   copyDiagnosticContextWithCode,
   hasDiagnosticAtCursor,
@@ -30,19 +31,20 @@ const EXTENSION_CONTEXT_KEYS = {
 export function activate(context: vscode.ExtensionContext): void {
   const codeLensProvider = new QuickCopyCodeLensProvider();
   const statusBarFeedback = createStatusBarFeedback();
+  const scheduleUiRefresh = createDebouncedUiRefresh(codeLensProvider);
 
   context.subscriptions.push(
     statusBarFeedback,
     registerFileCommand("quickCopy.copyFileName", (uri) => path.basename(uri.fsPath), "Copied file name", statusBarFeedback),
     registerFileCommand(
       "quickCopy.copyRelativePath",
-      (uri) => formatPath(uri, { pathStyle: "workspaceRelative" }),
+      (uri) => formatPath(uri, getPathOutputOptions("workspaceRelative")),
       "Copied relative path",
       statusBarFeedback,
     ),
     registerFileCommand(
       "quickCopy.copyAbsolutePath",
-      (uri) => formatPath(uri, { pathStyle: "absolute" }),
+      (uri) => formatPath(uri, getPathOutputOptions("absolute")),
       "Copied absolute path",
       statusBarFeedback,
     ),
@@ -54,19 +56,19 @@ export function activate(context: vscode.ExtensionContext): void {
     ),
     registerSelectionCommand(
       "quickCopy.copyPathWithLines",
-      (selection) => formatPathWithLines(selection, getReferenceTemplateOptions()),
+      (selection) => formatPathWithLines(selection, getReferenceOutputOptions()),
       "Copied file path with line range",
       statusBarFeedback,
     ),
     registerSelectionCommand(
       "quickCopy.copyPathWithLinesAndChars",
-      (selection) => formatPathWithLinesAndChars(selection, getReferenceTemplateOptions()),
+      (selection) => formatPathWithLinesAndChars(selection, getReferenceOutputOptions()),
       "Copied file path with line and char range",
       statusBarFeedback,
     ),
     registerSelectionCommand(
       "quickCopy.copyContext",
-      (selection) => formatCopyContext(selection, { maxLines: getSettings().maxCodeLines, ...getReferenceTemplateOptions() }),
+      (selection) => formatCopyContext(selection, { maxLines: getSettings().maxCodeLines, ...getReferenceOutputOptions() }),
       "Copied selection context",
       statusBarFeedback,
     ),
@@ -85,7 +87,7 @@ export function activate(context: vscode.ExtensionContext): void {
       }
 
       const settings = getSettings();
-      const referenceOptions = getReferenceTemplateOptions();
+      const referenceOptions = getReferenceOutputOptions();
 
       const text = formatQuickCopyActiveReference(active, settings.quickCopyActiveMode, settings.maxCodeLines, referenceOptions);
       await writeToClipboard(text, "Copied active reference", statusBarFeedback);
@@ -109,31 +111,36 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
     vscode.languages.registerCodeLensProvider({ scheme: "file" }, codeLensProvider),
     codeLensProvider,
+    scheduleUiRefresh,
 
     vscode.window.onDidChangeActiveTextEditor(() => {
-      codeLensProvider.refresh();
-      void updateContextKeys();
+      scheduleUiRefresh();
     }),
     vscode.window.onDidChangeTextEditorSelection(() => {
-      codeLensProvider.refresh();
-      void updateContextKeys();
+      scheduleUiRefresh();
     }),
-    vscode.languages.onDidChangeDiagnostics(() => {
-      codeLensProvider.refresh();
-      void updateContextKeys();
+    vscode.languages.onDidChangeDiagnostics((event) => {
+      if (event.uris.length === 0) {
+        clearDiagnosticCodeLensCache();
+      } else {
+        for (const uri of event.uris) {
+          clearDiagnosticCodeLensCache(uri);
+        }
+      }
+
+      scheduleUiRefresh();
     }),
     vscode.workspace.onDidChangeConfiguration((event) => {
       if (!shouldRefreshConfiguration(event)) {
         return;
       }
 
-      codeLensProvider.refresh();
-      void updateContextKeys();
+      clearDiagnosticCodeLensCache();
+      scheduleUiRefresh();
     }),
   );
 
-  codeLensProvider.refresh();
-  void updateContextKeys();
+  scheduleUiRefresh();
 }
 
 export function deactivate(): void {}
@@ -143,8 +150,18 @@ async function updateContextKeys(): Promise<void> {
   const canCopySelection = isSingleNonEmptySelection(editor);
   const canCopyDiagnostic = hasDiagnosticAtCursor(editor);
 
-  await vscode.commands.executeCommand("setContext", EXTENSION_CONTEXT_KEYS.canCopySelectionContext, canCopySelection);
-  await vscode.commands.executeCommand("setContext", EXTENSION_CONTEXT_KEYS.canCopyDiagnosticContext, canCopyDiagnostic);
+  if (lastContextState?.canCopySelection !== canCopySelection) {
+    await vscode.commands.executeCommand("setContext", EXTENSION_CONTEXT_KEYS.canCopySelectionContext, canCopySelection);
+  }
+
+  if (lastContextState?.canCopyDiagnostic !== canCopyDiagnostic) {
+    await vscode.commands.executeCommand("setContext", EXTENSION_CONTEXT_KEYS.canCopyDiagnosticContext, canCopyDiagnostic);
+  }
+
+  lastContextState = {
+    canCopySelection,
+    canCopyDiagnostic,
+  };
 }
 
 function requireSelectionContext() {
@@ -248,11 +265,30 @@ function getReferenceTemplateOptions() {
   };
 }
 
+function getReferenceOutputOptions() {
+  const settings = getSettings();
+
+  return {
+    ...getReferenceTemplateOptions(),
+    surroundWithSpaces: settings.padCopiedPathsWithSpaces,
+    surroundWithBlankLines: settings.padCopiedContextWithBlankLines,
+  };
+}
+
+function getPathOutputOptions(pathStyle: ReturnType<typeof getSettings>["pathStyle"]) {
+  const settings = getSettings();
+
+  return {
+    pathStyle,
+    surroundWithSpaces: settings.padCopiedPathsWithSpaces,
+  };
+}
+
 function formatQuickCopyActiveReference(
   selection: SelectionContext,
   mode: ReturnType<typeof getSettings>["quickCopyActiveMode"],
   maxCodeLines: number,
-  referenceOptions: ReturnType<typeof getReferenceTemplateOptions>,
+  referenceOptions: ReturnType<typeof getReferenceOutputOptions>,
 ): string {
   switch (mode) {
     case "singleLine":
@@ -266,6 +302,39 @@ function formatQuickCopyActiveReference(
     default:
       return formatPathWithLines(selection, referenceOptions);
   }
+}
+
+const UI_REFRESH_DEBOUNCE_MS = 80;
+let lastContextState:
+  | {
+      canCopySelection: boolean;
+      canCopyDiagnostic: boolean;
+    }
+  | undefined;
+
+function createDebouncedUiRefresh(codeLensProvider: QuickCopyCodeLensProvider): vscode.Disposable & (() => void) {
+  let timer: NodeJS.Timeout | undefined;
+
+  const run = () => {
+    if (timer) {
+      clearTimeout(timer);
+    }
+
+    timer = setTimeout(() => {
+      codeLensProvider.refresh();
+      void updateContextKeys();
+      timer = undefined;
+    }, UI_REFRESH_DEBOUNCE_MS);
+  };
+
+  return Object.assign(run, {
+    dispose() {
+      if (timer) {
+        clearTimeout(timer);
+        timer = undefined;
+      }
+    },
+  });
 }
 
 function createStatusBarFeedback(): vscode.StatusBarItem {

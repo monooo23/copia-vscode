@@ -6,6 +6,8 @@ import {
   buildLineReference,
   buildLocationReference,
   renderDiagnosticMessage,
+  surroundWithBlankLines,
+  surroundWithSpaces,
 } from "../dist/rendering.js";
 
 test("buildLineReference renders single-line anchor", () => {
@@ -102,4 +104,14 @@ test("renderDiagnosticMessage falls back when source and code are missing", () =
     }),
     "error Something went wrong.",
   );
+});
+
+test("surroundWithSpaces adds spaces when enabled", () => {
+  assert.equal(surroundWithSpaces("file: @/src/app.ts#L12", true), " file: @/src/app.ts#L12 ");
+  assert.equal(surroundWithSpaces("file: @/src/app.ts#L12", false), "file: @/src/app.ts#L12");
+});
+
+test("surroundWithBlankLines adds blank lines when enabled", () => {
+  assert.equal(surroundWithBlankLines("file: @/src/app.ts#L12\n```ts\nx\n```", true), "\nfile: @/src/app.ts#L12\n```ts\nx\n```\n");
+  assert.equal(surroundWithBlankLines("file: @/src/app.ts#L12\n```ts\nx\n```", false), "file: @/src/app.ts#L12\n```ts\nx\n```");
 });

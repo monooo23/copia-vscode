@@ -43,6 +43,16 @@
           ],
           "description": "Controls how Copia renders file paths."
         },
+        "copia.padCopiedPathsWithSpaces": {
+          "type": "boolean",
+          "default": true,
+          "description": "Wrap copied path-like outputs with a leading and trailing space."
+        },
+        "copia.padCopiedContextWithBlankLines": {
+          "type": "boolean",
+          "default": true,
+          "description": "Wrap copied code-block context outputs with a blank line before and after the content."
+        },
         "copia.enableSelectionCodeLens": {
           "type": "boolean",
           "default": true,

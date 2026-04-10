@@ -75,6 +75,10 @@ If the copied code is long, the extension only keeps the first 5 lines by defaul
   Maximum number of lines kept in `Copy Context` and `Copy Diagnostic + Code`. Default: `5`. Set to `0` to disable truncation.
 - `copia.pathStyle`
   Path rendering mode. Use `workspaceRelative` for relative paths and `@/` anchors, or `absolute` for full filesystem paths.
+- `copia.padCopiedPathsWithSpaces`
+  Add a leading and trailing space around copied path-like outputs. Default: `true`.
+- `copia.padCopiedContextWithBlankLines`
+  Add a blank line before and after copied context blocks such as `Copy Context` and `Copy Diagnostic + Code`. Default: `true`.
 - `copia.enableSelectionCodeLens`
   Enable or disable selection CodeLens shortcuts.
 - `copia.enableDiagnosticCodeLens`

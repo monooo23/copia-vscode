@@ -75,6 +75,10 @@ console.log(value);
   控制 `Copy Context` 和 `Copy Diagnostic + Code` 最多保留多少行代码。默认值：`5`。设为 `0` 表示不截断。
 - `copia.pathStyle`
   路径渲染模式。`workspaceRelative` 使用工作区相对路径，并允许 `@/` 锚点；`absolute` 使用绝对路径。
+- `copia.padCopiedPathsWithSpaces`
+  是否在路径类复制结果前后自动补空格。默认值：`true`。
+- `copia.padCopiedContextWithBlankLines`
+  是否在 `Copy Context`、`Copy Diagnostic + Code` 这类块内容前后自动补空行。默认值：`true`。
 - `copia.enableSelectionCodeLens`
   是否启用选区 CodeLens。
 - `copia.enableDiagnosticCodeLens`

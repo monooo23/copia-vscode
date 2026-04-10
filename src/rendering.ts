@@ -97,6 +97,22 @@ export function renderDiagnosticMessage(parts: DiagnosticMessageShape): string {
   return `${parts.severity} ${parts.message}`;
 }
 
+export function surroundWithSpaces(value: string, enabled = true): string {
+  if (!enabled) {
+    return value;
+  }
+
+  return ` ${value} `;
+}
+
+export function surroundWithBlankLines(value: string, enabled = true): string {
+  if (!enabled) {
+    return value;
+  }
+
+  return `\n${value}\n`;
+}
+
 function truncateCodeBlockContent(content: string, maxLines?: number): string {
   if (!maxLines || maxLines < 1) {
     return content;

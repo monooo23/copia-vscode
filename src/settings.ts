@@ -7,6 +7,8 @@ export type QuickCopyActiveMode = "singleLine" | "lineRange" | "charRange" | "co
 export interface CopiaSettings {
   readonly maxCodeLines: number;
   readonly pathStyle: PathStyle;
+  readonly padCopiedPathsWithSpaces: boolean;
+  readonly padCopiedContextWithBlankLines: boolean;
   readonly enableSelectionCodeLens: boolean;
   readonly enableDiagnosticCodeLens: boolean;
   readonly showDiagnosticCodeLensMessage: boolean;
@@ -23,6 +25,8 @@ export function getSettings(): CopiaSettings {
   return {
     maxCodeLines: configuration.get<number>("maxCodeLines", 5),
     pathStyle: configuration.get<PathStyle>("pathStyle", "workspaceRelative"),
+    padCopiedPathsWithSpaces: configuration.get<boolean>("padCopiedPathsWithSpaces", true),
+    padCopiedContextWithBlankLines: configuration.get<boolean>("padCopiedContextWithBlankLines", true),
     enableSelectionCodeLens: configuration.get<boolean>("enableSelectionCodeLens", true),
     enableDiagnosticCodeLens: configuration.get<boolean>("enableDiagnosticCodeLens", true),
     showDiagnosticCodeLensMessage: configuration.get<boolean>("showDiagnosticCodeLensMessage", true),

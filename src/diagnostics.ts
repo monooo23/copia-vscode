@@ -21,6 +21,13 @@ interface ResolvedDiagnosticContext {
   readonly context: DiagnosticContext;
 }
 
+interface DiagnosticsByLineCacheEntry {
+  readonly severity: DiagnosticCodeLensSeverity;
+  readonly lineMap: Map<number, vscode.Diagnostic[]>;
+}
+
+const diagnosticsByLineCache = new Map<string, DiagnosticsByLineCacheEntry>();
+
 export async function copyDiagnosticContext(
   uri?: vscode.Uri,
   rangeOrPosition?: vscode.Range | vscode.Position,
@@ -48,6 +55,7 @@ export async function copyDiagnosticContextWithCode(
   return formatDiagnosticContextWithCode(codeContext, {
     maxLines: options?.maxCodeLines,
     ...getReferenceTemplateOptions(),
+    surroundWithBlankLines: getSettings().padCopiedContextWithBlankLines,
   });
 }
 
@@ -60,9 +68,16 @@ export function hasDiagnosticAtCursor(editor: vscode.TextEditor | undefined): bo
 }
 
 export function getDiagnosticsByStartLine(uri: vscode.Uri): Map<number, vscode.Diagnostic[]> {
+  const severity = getSettings().diagnosticCodeLensSeverity;
+  const cacheKey = uri.toString();
+  const cached = diagnosticsByLineCache.get(cacheKey);
+  if (cached && cached.severity === severity) {
+    return cached.lineMap;
+  }
+
   const lineMap = new Map<number, vscode.Diagnostic[]>();
 
-  for (const diagnostic of filterDiagnosticsForCodeLens(getSortedDiagnostics(uri), getSettings().diagnosticCodeLensSeverity)) {
+  for (const diagnostic of filterDiagnosticsForCodeLens(getSortedDiagnostics(uri), severity)) {
     const line = diagnostic.range.start.line;
     const diagnostics = lineMap.get(line);
     if (diagnostics) {
@@ -72,7 +87,17 @@ export function getDiagnosticsByStartLine(uri: vscode.Uri): Map<number, vscode.D
     }
   }
 
+  diagnosticsByLineCache.set(cacheKey, { severity, lineMap });
   return lineMap;
+}
+
+export function clearDiagnosticCodeLensCache(uri?: vscode.Uri): void {
+  if (uri) {
+    diagnosticsByLineCache.delete(uri.toString());
+    return;
+  }
+
+  diagnosticsByLineCache.clear();
 }
 
 export function getDiagnosticSeverityIcon(diagnostics: readonly vscode.Diagnostic[]): string {

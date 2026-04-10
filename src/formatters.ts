@@ -8,6 +8,8 @@ import {
   CodeBlockOptions,
   ReferenceTemplateOptions,
   renderDiagnosticMessage,
+  surroundWithBlankLines,
+  surroundWithSpaces,
 } from "./rendering";
 import type { PathStyle } from "./settings";
 
@@ -40,6 +42,11 @@ export interface PathOptions {
 
 export interface ReferenceOptions extends ReferenceTemplateOptions {
   readonly pathStyle?: PathStyle;
+}
+
+export interface OutputFormattingOptions extends ReferenceTemplateOptions {
+  readonly surroundWithSpaces?: boolean;
+  readonly surroundWithBlankLines?: boolean;
 }
 
 export function isSingleNonEmptySelection(editor: vscode.TextEditor | undefined): editor is vscode.TextEditor {
@@ -95,38 +102,44 @@ export function getActiveReferenceContext(editor: vscode.TextEditor | undefined,
   };
 }
 
-export function formatPath(uri: vscode.Uri, options?: PathOptions): string {
-  return getDisplayPath(uri, options);
+export function formatPath(
+  uri: vscode.Uri,
+  options?: PathOptions & Pick<OutputFormattingOptions, "surroundWithSpaces">,
+): string {
+  return surroundWithSpaces(getDisplayPath(uri, options), options?.surroundWithSpaces);
 }
 
-export function formatPathWithSingleLine(context: SelectionContext, options?: ReferenceTemplateOptions): string {
-  return buildLineReference(
-    {
-      path: context.pathText,
-      pathRef: context.pathRef,
-      startLine: context.startLine,
-      endLine: context.startLine,
-    },
-    options,
+export function formatPathWithSingleLine(context: SelectionContext, options?: OutputFormattingOptions): string {
+  return surroundWithSpaces(
+    buildLineReference(
+      {
+        path: context.pathText,
+        pathRef: context.pathRef,
+        startLine: context.startLine,
+        endLine: context.startLine,
+      },
+      options,
+    ),
+    options?.surroundWithSpaces,
   );
 }
 
-export function formatPathWithLines(context: SelectionContext, options?: ReferenceTemplateOptions): string {
-  return buildLineReference(toReferenceContext(context), options);
+export function formatPathWithLines(context: SelectionContext, options?: OutputFormattingOptions): string {
+  return surroundWithSpaces(buildLineReference(toReferenceContext(context), options), options?.surroundWithSpaces);
 }
 
-export function formatPathWithLinesAndChars(context: SelectionContext, options?: ReferenceTemplateOptions): string {
-  return buildLocationReference(toReferenceContext(context), options);
+export function formatPathWithLinesAndChars(context: SelectionContext, options?: OutputFormattingOptions): string {
+  return surroundWithSpaces(buildLocationReference(toReferenceContext(context), options), options?.surroundWithSpaces);
 }
 
 export function formatCopyContext(
   context: SelectionContext,
-  options?: CodeBlockOptions & ReferenceTemplateOptions,
+  options?: CodeBlockOptions & OutputFormattingOptions,
 ): string {
   const location = buildLocationReference(toReferenceContext(context), options);
   const fence = buildCodeFence(context.selectedText, context.languageId, options);
 
-  return `${location}\n${fence}`;
+  return surroundWithBlankLines(`${location}\n${fence}`, options?.surroundWithBlankLines);
 }
 
 export function formatDiagnosticContext(context: DiagnosticContext, options?: ReferenceTemplateOptions): string {
@@ -135,12 +148,12 @@ export function formatDiagnosticContext(context: DiagnosticContext, options?: Re
 
 export function formatDiagnosticContextWithCode(
   context: DiagnosticCodeContext,
-  options?: CodeBlockOptions & ReferenceTemplateOptions,
+  options?: CodeBlockOptions & OutputFormattingOptions,
 ): string {
   const location = buildLocationReference(toReferenceContext(context), options);
   const fence = buildCodeFence(context.codeText, context.languageId, options);
 
-  return `${location}\n${context.message}\n${fence}`;
+  return surroundWithBlankLines(`${location}\n${context.message}\n${fence}`, options?.surroundWithBlankLines);
 }
 
 export function buildDiagnosticMessage(diagnostic: vscode.Diagnostic): string {
