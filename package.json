@@ -53,10 +53,20 @@
           "default": true,
           "description": "Wrap copied code-block context outputs with a blank line before and after the content."
         },
-        "copia.enableSelectionCodeLens": {
-          "type": "boolean",
-          "default": true,
-          "description": "Show CodeLens shortcuts for the current text selection."
+        "copia.selectionActionsUi": {
+          "type": "string",
+          "enum": [
+            "statusBar",
+            "codeLens",
+            "off"
+          ],
+          "default": "statusBar",
+          "markdownEnumDescriptions": [
+            "Show a status bar entry for the current text selection without shifting editor lines.",
+            "Show selection actions as CodeLens above the selection.",
+            "Do not show a dedicated selection action UI."
+          ],
+          "description": "Controls how Copia exposes selection actions."
         },
         "copia.enableDiagnosticCodeLens": {
           "type": "boolean",
@@ -113,7 +123,7 @@
             "Copy the exact character range, or the full current line range when there is no selection.",
             "Copy the active reference plus a code block. Uses the current selection, or the current line when there is no selection."
           ],
-          "description": "Controls what `Copia: Quick Copy Active Reference` copies."
+          "description": "Controls what `Copia: Quick Copy Active Reference` copies when you run the command from the Command Palette or bind your own shortcut."
         }
       }
     },
@@ -168,6 +178,12 @@
         "enablement": "quickCopy.canCopySelectionContext"
       },
       {
+        "command": "quickCopy.showSelectionActions",
+        "title": "Show Selection Actions",
+        "category": "Copia",
+        "enablement": "quickCopy.canCopySelectionContext"
+      },
+      {
         "command": "quickCopy.quickCopyActiveReference",
         "title": "Quick Copy Active Reference",
         "category": "Copia"
@@ -196,47 +212,47 @@
       "quickCopy.editorSubmenu": [
         {
           "command": "quickCopy.copyFileName",
-          "group": "1_core",
+          "group": "1_core@1",
           "when": "resourceScheme == file"
         },
         {
           "command": "quickCopy.copyRelativePath",
-          "group": "1_core",
+          "group": "1_core@2",
           "when": "resourceScheme == file"
         },
         {
           "command": "quickCopy.copyAbsolutePath",
-          "group": "1_core",
+          "group": "1_core@3",
           "when": "resourceScheme == file"
         },
         {
           "command": "quickCopy.copySelection",
-          "group": "2_selection",
+          "group": "2_selection@1",
           "when": "quickCopy.canCopySelectionContext"
         },
         {
           "command": "quickCopy.copyPathWithLines",
-          "group": "2_selection",
+          "group": "2_selection@2",
           "when": "quickCopy.canCopySelectionContext"
         },
         {
           "command": "quickCopy.copyPathWithLinesAndChars",
-          "group": "2_selection",
+          "group": "2_selection@3",
           "when": "quickCopy.canCopySelectionContext"
         },
         {
           "command": "quickCopy.copyContext",
-          "group": "2_selection",
+          "group": "2_selection@4",
           "when": "quickCopy.canCopySelectionContext"
         },
         {
           "command": "quickCopy.copyDiagnostic",
-          "group": "3_diagnostic",
+          "group": "3_diagnostic@1",
           "when": "quickCopy.canCopyDiagnosticContext"
         },
         {
           "command": "quickCopy.copyDiagnosticWithCode",
-          "group": "3_diagnostic",
+          "group": "3_diagnostic@2",
           "when": "quickCopy.canCopyDiagnosticContext"
         }
       ],
@@ -256,24 +272,30 @@
       "quickCopy.resourceSubmenu": [
         {
           "command": "quickCopy.copyFileName",
-          "group": "1_core"
+          "group": "1_core@1"
         },
         {
           "command": "quickCopy.copyRelativePath",
-          "group": "1_core"
+          "group": "1_core@2"
         },
         {
           "command": "quickCopy.copyAbsolutePath",
-          "group": "1_core"
+          "group": "1_core@3"
         }
       ]
     },
     "keybindings": [
       {
-        "command": "quickCopy.quickCopyActiveReference",
+        "command": "quickCopy.copyRelativePath",
         "key": "alt+l",
         "mac": "alt+l",
         "when": "editorTextFocus && resourceScheme == file"
+      },
+      {
+        "command": "quickCopy.copyPathWithLines",
+        "key": "alt+shift+l",
+        "mac": "alt+cmd+l",
+        "when": "editorTextFocus && resourceScheme == file && quickCopy.canCopySelectionContext"
       }
     ]
   },

@@ -19,8 +19,8 @@
 
 ## 触发方式
 
-- 选区 CodeLens
-  选择单个非空选区后，会在选区上方显示 `Selection`、`Name`、`Lines`、`Chars`、`Context`。
+- 选区动作入口
+  默认情况下，选择单个非空选区后，会在状态栏显示 `Copia` 入口，不会把编辑器内容往下顶。你也可以通过 `copia.selectionActionsUi` 切回 CodeLens。
 - 诊断 CodeLens
   当某一行存在诊断信息时，会显示 `Copy Diagnostic`。
 - 编辑器右键菜单
@@ -30,17 +30,19 @@
 - 命令面板
   搜索 `Copia`。
 - 快捷键
-  macOS 使用 `Option+L`，Windows / Linux 使用 `Alt+L` 触发 `Copia: Quick Copy Active Reference`。
+  macOS 使用 `Option+L`，Windows / Linux 使用 `Alt+L` 触发 `Copia: Copy Relative Path`。有选区时，macOS 使用 `Option+Command+L`，Windows / Linux 使用 `Alt+Shift+L` 触发 `Copia: Copy Path + Lines`。这些默认快捷键都可以在 VS Code Keyboard Shortcuts 中修改。
 - Explorer / SCM 右键菜单
   在文件、文件夹或 Git 变更项上右键后使用 `Copia > Copy File Name`、`Copy Relative Path` 或 `Copy Absolute Path`。
 
 ## 用法
 
-- 在编辑器中选中一段代码，可直接使用上方的 CodeLens 快捷入口。
+- 在编辑器中选中一段代码，可直接使用状态栏中的 `Copia` 选区动作入口。
 - 也可以通过编辑器右键菜单使用 `Copia`。
 - 在 Explorer 或 SCM 中，右键一个或多个资源后使用 `Copia > Copy File Name`、`Copy Relative Path` 或 `Copy Absolute Path`。
 - 在诊断位置，可以使用灯泡菜单，或者从命令面板运行 `Copia: Copy Diagnostic` / `Copia: Copy Diagnostic + Code`。
-- 按 `Option+L` / `Alt+L` 可以快速复制当前激活引用，具体输出由 `copia.quickCopyActiveMode` 决定。
+- 按 `Option+L` / `Alt+L` 可以快速复制当前文件的相对路径。
+- 有选区时，按 `Option+Shift+L` / `Alt+Shift+L` 可以快速复制 `Path + Lines`。
+- 如果要用 `copia.quickCopyActiveMode`，请从命令面板运行 `Copia: Quick Copy Active Reference`，或者自行给它绑定快捷键。
 
 ## 输出格式
 
@@ -79,8 +81,8 @@ console.log(value);
   是否在路径类复制结果前后自动补空格。默认值：`true`。
 - `copia.padCopiedContextWithBlankLines`
   是否在 `Copy Context`、`Copy Diagnostic + Code` 这类块内容前后自动补空行。默认值：`true`。
-- `copia.enableSelectionCodeLens`
-  是否启用选区 CodeLens。
+- `copia.selectionActionsUi`
+  控制选区动作入口的显示方式。可选值：`statusBar`、`codeLens`、`off`。
 - `copia.enableDiagnosticCodeLens`
   是否启用诊断 CodeLens。
 - `copia.showDiagnosticCodeLensMessage`
@@ -94,7 +96,7 @@ console.log(value);
 - `copia.charRangeReferenceTemplate`
   字符范围引用模板。默认值：`file: ${pathRef}#L${startLine}:${startColumn}-L${endLine}:${endColumn}`。
 - `copia.quickCopyActiveMode`
-  控制 `Option+L` / `Alt+L` 复制哪种格式。可选值：`singleLine`、`lineRange`、`charRange`、`context`。
+  控制 `Copia: Quick Copy Active Reference` 复制哪种格式。可选值：`singleLine`、`lineRange`、`charRange`、`context`。
 
 ## 模板变量
 
@@ -135,7 +137,7 @@ console.log(value);
 {
   "copia.maxCodeLines": 5,
   "copia.pathStyle": "workspaceRelative",
-  "copia.enableSelectionCodeLens": true,
+  "copia.selectionActionsUi": "statusBar",
   "copia.enableDiagnosticCodeLens": true,
   "copia.diagnosticCodeLensSeverity": "errorAndWarning",
   "copia.singleLineReferenceTemplate": "file: ${pathRef}#L${startLine}",
@@ -148,13 +150,17 @@ console.log(value);
 ## 验证清单
 
 - 选区
-  选择单个非空范围，确认选区 CodeLens 出现。
+  选择单个非空范围，确认状态栏中的 `Copia` 入口出现且不会把编辑器内容往下顶；如果 `copia.selectionActionsUi` 为 `codeLens`，则确认 CodeLens 出现。
 - 选区复制
   触发 `Copy Context`，确认输出以 `file: @/...#Lx:y-Lx:y` 开头。
 - 截断
   选择超过 5 行的代码，确认代码块结尾为 `... N more lines`。
-- 快捷键
-  分别在有选区和无选区时按 `Option+L` / `Alt+L`，确认输出符合 `copia.quickCopyActiveMode`。
+- 相对路径快捷键
+  按 `Option+L` / `Alt+L`，确认复制的是当前文件的相对路径。
+- Path + Lines 快捷键
+  在有选区时，macOS 按 `Option+Command+L`，Windows / Linux 按 `Alt+Shift+L`，确认复制的是 `Path + Lines`。
+- Quick Copy Active Reference
+  从命令面板运行 `Copia: Quick Copy Active Reference`，或自行给它绑定快捷键，确认输出符合 `copia.quickCopyActiveMode`。
 - 诊断
   将光标放到 TypeScript 或 ESLint 诊断位置，确认 `Copy Diagnostic` 可用。
 - 诊断带代码

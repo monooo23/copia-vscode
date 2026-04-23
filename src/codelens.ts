@@ -22,7 +22,7 @@ export class QuickCopyCodeLensProvider implements vscode.CodeLensProvider {
     const settings = getSettings();
 
     return [
-      ...this.buildSelectionCodeLenses(editor, settings.enableSelectionCodeLens),
+      ...this.buildSelectionCodeLenses(editor, settings.selectionActionsUi),
       ...this.buildDiagnosticCodeLenses(
         document,
         settings.enableDiagnosticCodeLens,
@@ -35,8 +35,11 @@ export class QuickCopyCodeLensProvider implements vscode.CodeLensProvider {
     this.changeEmitter.dispose();
   }
 
-  private buildSelectionCodeLenses(editor: vscode.TextEditor, enabled: boolean): vscode.CodeLens[] {
-    if (!enabled || !isSingleNonEmptySelection(editor)) {
+  private buildSelectionCodeLenses(
+    editor: vscode.TextEditor,
+    placement: ReturnType<typeof getSettings>["selectionActionsUi"],
+  ): vscode.CodeLens[] {
+    if (placement !== "codeLens" || !isSingleNonEmptySelection(editor)) {
       return [];
     }
 

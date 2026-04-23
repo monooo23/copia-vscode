@@ -3,13 +3,14 @@ import * as vscode from "vscode";
 export type PathStyle = "workspaceRelative" | "absolute";
 export type DiagnosticCodeLensSeverity = "error" | "errorAndWarning" | "all";
 export type QuickCopyActiveMode = "singleLine" | "lineRange" | "charRange" | "context";
+export type SelectionActionsUi = "statusBar" | "codeLens" | "off";
 
 export interface CopiaSettings {
   readonly maxCodeLines: number;
   readonly pathStyle: PathStyle;
   readonly padCopiedPathsWithSpaces: boolean;
   readonly padCopiedContextWithBlankLines: boolean;
-  readonly enableSelectionCodeLens: boolean;
+  readonly selectionActionsUi: SelectionActionsUi;
   readonly enableDiagnosticCodeLens: boolean;
   readonly showDiagnosticCodeLensMessage: boolean;
   readonly diagnosticCodeLensSeverity: DiagnosticCodeLensSeverity;
@@ -27,7 +28,7 @@ export function getSettings(): CopiaSettings {
     pathStyle: configuration.get<PathStyle>("pathStyle", "workspaceRelative"),
     padCopiedPathsWithSpaces: configuration.get<boolean>("padCopiedPathsWithSpaces", true),
     padCopiedContextWithBlankLines: configuration.get<boolean>("padCopiedContextWithBlankLines", true),
-    enableSelectionCodeLens: configuration.get<boolean>("enableSelectionCodeLens", true),
+    selectionActionsUi: configuration.get<SelectionActionsUi>("selectionActionsUi", "statusBar"),
     enableDiagnosticCodeLens: configuration.get<boolean>("enableDiagnosticCodeLens", true),
     showDiagnosticCodeLensMessage: configuration.get<boolean>("showDiagnosticCodeLensMessage", true),
     diagnosticCodeLensSeverity: configuration.get<DiagnosticCodeLensSeverity>(

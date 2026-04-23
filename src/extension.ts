@@ -21,6 +21,7 @@ import {
   SelectionContext,
 } from "./formatters";
 import { extractResourceUris } from "./resources";
+import { SelectionActionsStatusBar, showSelectionActionsQuickPick } from "./selection-actions";
 import { getSettings, shouldRefreshConfiguration } from "./settings";
 
 const EXTENSION_CONTEXT_KEYS = {
@@ -31,10 +32,14 @@ const EXTENSION_CONTEXT_KEYS = {
 export function activate(context: vscode.ExtensionContext): void {
   const codeLensProvider = new QuickCopyCodeLensProvider();
   const statusBarFeedback = createStatusBarFeedback();
-  const scheduleUiRefresh = createDebouncedUiRefresh(codeLensProvider);
+  const selectionActionsStatusBar = new SelectionActionsStatusBar();
+  const scheduleUiRefresh = createDebouncedUiRefresh(codeLensProvider, () => {
+    selectionActionsStatusBar.refresh();
+  });
 
   context.subscriptions.push(
     statusBarFeedback,
+    selectionActionsStatusBar,
     registerFileCommand("quickCopy.copyFileName", (uri) => path.basename(uri.fsPath), "Copied file name", statusBarFeedback),
     registerFileCommand(
       "quickCopy.copyRelativePath",
@@ -92,6 +97,7 @@ export function activate(context: vscode.ExtensionContext): void {
       const text = formatQuickCopyActiveReference(active, settings.quickCopyActiveMode, settings.maxCodeLines, referenceOptions);
       await writeToClipboard(text, "Copied active reference", statusBarFeedback);
     }),
+    vscode.commands.registerCommand("quickCopy.showSelectionActions", showSelectionActionsQuickPick),
     registerDiagnosticCommand("quickCopy.copyDiagnostic", copyDiagnosticContext, "Copied diagnostic context", statusBarFeedback),
     registerDiagnosticCommand(
       "quickCopy.copyDiagnosticWithCode",
@@ -312,7 +318,10 @@ let lastContextState:
     }
   | undefined;
 
-function createDebouncedUiRefresh(codeLensProvider: QuickCopyCodeLensProvider): vscode.Disposable & (() => void) {
+function createDebouncedUiRefresh(
+  codeLensProvider: QuickCopyCodeLensProvider,
+  onRefresh?: () => void,
+): vscode.Disposable & (() => void) {
   let timer: NodeJS.Timeout | undefined;
 
   const run = () => {
@@ -322,6 +331,7 @@ function createDebouncedUiRefresh(codeLensProvider: QuickCopyCodeLensProvider): 
 
     timer = setTimeout(() => {
       codeLensProvider.refresh();
+      onRefresh?.();
       void updateContextKeys();
       timer = undefined;
     }, UI_REFRESH_DEBOUNCE_MS);
