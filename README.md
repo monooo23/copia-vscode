@@ -20,7 +20,7 @@ Copy for AI from VS Code selections, diagnostics, and resources.
 ## Trigger Modes
 
 - Selection actions
-  By default, select a non-empty single range to reveal a `Copia` status bar entry with selection actions and without shifting editor lines. You can switch this to CodeLens with `copia.selectionActionsUi`.
+  By default, select a non-empty single range to reveal a `Copia` status bar entry with selection actions and without shifting editor lines. You can switch to CodeLens or a pure hover overlay with `copia.selectionActionsUi`.
 - Diagnostic CodeLens
   On a line with diagnostics, Copia shows `Copy Diagnostic`.
 - Editor context menu
@@ -82,7 +82,8 @@ If the copied code is long, the extension only keeps the first 5 lines by defaul
 - `copia.padCopiedContextWithBlankLines`
   Add a blank line before and after copied context blocks such as `Copy Context` and `Copy Diagnostic + Code`. Default: `true`.
 - `copia.selectionActionsUi`
-  Control how selection actions are shown. Available values: `statusBar`, `codeLens`, `off`.
+  Control how selection actions are shown. Available values: `statusBar`, `codeLens`, `hover`, `off`.
+  - `hover` shows no visible UI and reveals the action menu only when hovering inside the selection.
 - `copia.enableDiagnosticCodeLens`
   Enable or disable diagnostic CodeLens shortcuts.
 - `copia.showDiagnosticCodeLensMessage`
@@ -150,7 +151,7 @@ Full settings example:
 ## Validation Checklist
 
 - Selection
-  Select a single range and confirm the `Copia` status bar entry appears without shifting the editor. If `copia.selectionActionsUi` is `codeLens`, confirm the CodeLens actions appear instead.
+  Select a single range and confirm the `Copia` status bar entry appears without shifting the editor. Toggle `copia.selectionActionsUi` through `codeLens` and `hover` and confirm each mode surfaces the actions as expected.
 - Selection copy
   Run `Copy Context` and verify the output starts with `file: @/...#Lx:y-Lx:y`.
 - Truncation

@@ -58,12 +58,14 @@
           "enum": [
             "statusBar",
             "codeLens",
+            "hover",
             "off"
           ],
           "default": "statusBar",
           "markdownEnumDescriptions": [
             "Show a status bar entry for the current text selection without shifting editor lines.",
             "Show selection actions as CodeLens above the selection.",
+            "Reveal the action menu only when hovering inside the selection, with no other visible UI.",
             "Do not show a dedicated selection action UI."
           ],
           "description": "Controls how Copia exposes selection actions."

@@ -3,7 +3,7 @@ import * as vscode from "vscode";
 export type PathStyle = "workspaceRelative" | "absolute";
 export type DiagnosticCodeLensSeverity = "error" | "errorAndWarning" | "all";
 export type QuickCopyActiveMode = "singleLine" | "lineRange" | "charRange" | "context";
-export type SelectionActionsUi = "statusBar" | "codeLens" | "off";
+export type SelectionActionsUi = "statusBar" | "codeLens" | "hover" | "off";
 
 export interface CopiaSettings {
   readonly maxCodeLines: number;

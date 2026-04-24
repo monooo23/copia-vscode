@@ -20,7 +20,7 @@
 ## 触发方式
 
 - 选区动作入口
-  默认情况下，选择单个非空选区后，会在状态栏显示 `Copia` 入口，不会把编辑器内容往下顶。你也可以通过 `copia.selectionActionsUi` 切回 CodeLens。
+  默认情况下，选择单个非空选区后，会在状态栏显示 `Copia` 入口，不会把编辑器内容往下顶。你也可以通过 `copia.selectionActionsUi` 切换到 CodeLens 或纯 hover 浮层。
 - 诊断 CodeLens
   当某一行存在诊断信息时，会显示 `Copy Diagnostic`。
 - 编辑器右键菜单
@@ -82,7 +82,8 @@ console.log(value);
 - `copia.padCopiedContextWithBlankLines`
   是否在 `Copy Context`、`Copy Diagnostic + Code` 这类块内容前后自动补空行。默认值：`true`。
 - `copia.selectionActionsUi`
-  控制选区动作入口的显示方式。可选值：`statusBar`、`codeLens`、`off`。
+  控制选区动作入口的显示方式。可选值：`statusBar`、`codeLens`、`hover`、`off`。
+  - `hover` 不显示任何 UI，仅在 hover 选区内部时弹出动作菜单。
 - `copia.enableDiagnosticCodeLens`
   是否启用诊断 CodeLens。
 - `copia.showDiagnosticCodeLensMessage`
@@ -150,7 +151,7 @@ console.log(value);
 ## 验证清单
 
 - 选区
-  选择单个非空范围，确认状态栏中的 `Copia` 入口出现且不会把编辑器内容往下顶；如果 `copia.selectionActionsUi` 为 `codeLens`，则确认 CodeLens 出现。
+  选择单个非空范围，确认状态栏中的 `Copia` 入口出现且不会把编辑器内容往下顶；将 `copia.selectionActionsUi` 依次切到 `codeLens`、`hover`，确认对应的入口都能正确展示。
 - 选区复制
   触发 `Copy Context`，确认输出以 `file: @/...#Lx:y-Lx:y` 开头。
 - 截断

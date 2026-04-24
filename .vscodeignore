@@ -1,7 +1,12 @@
 .gitignore
 .vscodeignore
+.vscode/**
+.DS_Store
+**/.DS_Store
 node_modules/**
 src/**
+test/**
 tsconfig.json
 REQUIREMENTS.md
 package-lock.json
+*.vsix

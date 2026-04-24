@@ -21,7 +21,11 @@ import {
   SelectionContext,
 } from "./formatters";
 import { extractResourceUris } from "./resources";
-import { SelectionActionsStatusBar, showSelectionActionsQuickPick } from "./selection-actions";
+import {
+  SelectionActionsHoverProvider,
+  SelectionActionsStatusBar,
+  showSelectionActionsQuickPick,
+} from "./selection-actions";
 import { getSettings, shouldRefreshConfiguration } from "./settings";
 
 const EXTENSION_CONTEXT_KEYS = {
@@ -40,6 +44,7 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     statusBarFeedback,
     selectionActionsStatusBar,
+    vscode.languages.registerHoverProvider({ scheme: "file" }, new SelectionActionsHoverProvider()),
     registerFileCommand("quickCopy.copyFileName", (uri) => path.basename(uri.fsPath), "Copied file name", statusBarFeedback),
     registerFileCommand(
       "quickCopy.copyRelativePath",
