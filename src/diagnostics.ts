@@ -13,6 +13,7 @@ import {
   DiagnosticCodeLensSeverity,
   getReferenceTemplateOptions,
   getSettings,
+  padContextOutput,
 } from "./settings";
 
 export interface DiagnosticFormatOptions {
@@ -32,35 +33,51 @@ interface DiagnosticsByLineCacheEntry {
 
 const diagnosticsByLineCache = new Map<string, DiagnosticsByLineCacheEntry>();
 
+export interface DiagnosticCopyResult {
+  readonly text: string;
+  readonly count: number;
+}
+
 export async function copyDiagnosticContext(
   uri?: vscode.Uri,
   rangeOrPosition?: vscode.Range | vscode.Position,
-): Promise<string | undefined> {
-  const resolved = await resolveDiagnosticContext(uri, rangeOrPosition);
-  return resolved ? formatDiagnosticContext(resolved.context, getReferenceTemplateOptions()) : undefined;
+): Promise<DiagnosticCopyResult | undefined> {
+  const resolved = await resolveDiagnosticContexts(uri, rangeOrPosition);
+  if (!resolved) {
+    return undefined;
+  }
+
+  const blocks = resolved.map((entry) =>
+    formatDiagnosticContext(entry.context, getReferenceTemplateOptions()),
+  );
+  return { text: blocks.join("\n\n"), count: blocks.length };
 }
 
 export async function copyDiagnosticContextWithCode(
   uri?: vscode.Uri,
   rangeOrPosition?: vscode.Range | vscode.Position,
   options?: DiagnosticFormatOptions,
-): Promise<string | undefined> {
-  const resolved = await resolveDiagnosticContext(uri, rangeOrPosition);
+): Promise<DiagnosticCopyResult | undefined> {
+  const resolved = await resolveDiagnosticContexts(uri, rangeOrPosition);
   if (!resolved) {
     return undefined;
   }
 
-  const codeContext: DiagnosticCodeContext = {
-    ...resolved.context,
-    codeText: getDiagnosticCodeText(resolved.document, resolved.diagnostic.range),
-    languageId: resolved.document.languageId,
-  };
+  const blocks = resolved.map((entry) => {
+    const codeContext: DiagnosticCodeContext = {
+      ...entry.context,
+      codeText: getDiagnosticCodeText(entry.document, entry.diagnostic.range),
+      languageId: entry.document.languageId,
+    };
 
-  return formatDiagnosticContextWithCode(codeContext, {
-    maxLines: options?.maxCodeLines,
-    ...getReferenceTemplateOptions(),
-    surroundWithBlankLines: getSettings().padCopiedContextWithBlankLines,
+    return formatDiagnosticContextWithCode(codeContext, {
+      maxLines: options?.maxCodeLines,
+      ...getReferenceTemplateOptions(),
+      surroundWithBlankLines: false,
+    });
   });
+
+  return { text: padContextOutput(blocks.join("\n\n")), count: blocks.length };
 }
 
 export function hasDiagnosticAtCursor(editor: vscode.TextEditor | undefined): boolean {
@@ -174,10 +191,10 @@ export class QuickCopyCodeActionProvider implements vscode.CodeActionProvider {
   }
 }
 
-async function resolveDiagnosticContext(
+async function resolveDiagnosticContexts(
   uri?: vscode.Uri,
   rangeOrPosition?: vscode.Range | vscode.Position,
-): Promise<ResolvedDiagnosticContext | undefined> {
+): Promise<ResolvedDiagnosticContext[] | undefined> {
   const targetUri = uri ?? vscode.window.activeTextEditor?.document.uri;
   if (!targetUri || targetUri.scheme !== "file") {
     return undefined;
@@ -189,26 +206,29 @@ async function resolveDiagnosticContext(
     return undefined;
   }
 
-  const selected = diagnostics.length === 1 ? diagnostics[0] : await pickDiagnostic(diagnostics);
-  if (!selected) {
+  const selected = diagnostics.length === 1 ? diagnostics : await pickDiagnostics(diagnostics);
+  if (!selected || selected.length === 0) {
     return undefined;
   }
 
   const document = await vscode.workspace.openTextDocument(targetUri);
+  const settings = getSettings();
+  const pathText = getDisplayPath(targetUri, { pathStyle: settings.pathStyle });
+  const pathRef = getPathReference(targetUri, { pathStyle: settings.pathStyle });
 
-  return {
+  return selected.map((diagnostic) => ({
     document,
-    diagnostic: selected,
+    diagnostic,
     context: {
-      pathText: getDisplayPath(targetUri, { pathStyle: getSettings().pathStyle }),
-      pathRef: getPathReference(targetUri, { pathStyle: getSettings().pathStyle }),
-      startLine: selected.range.start.line + 1,
-      startChar: selected.range.start.character + 1,
-      endLine: selected.range.end.line + 1,
-      endChar: selected.range.end.character + 1,
-      message: buildDiagnosticMessage(selected),
+      pathText,
+      pathRef,
+      startLine: diagnostic.range.start.line + 1,
+      startChar: diagnostic.range.start.character + 1,
+      endLine: diagnostic.range.end.line + 1,
+      endChar: diagnostic.range.end.character + 1,
+      message: buildDiagnosticMessage(diagnostic),
     },
-  };
+  }));
 }
 
 function getDiagnosticsAtTarget(
@@ -263,18 +283,41 @@ function filterDiagnosticsForCodeLens(
   }
 }
 
-async function pickDiagnostic(diagnostics: readonly vscode.Diagnostic[]): Promise<vscode.Diagnostic | undefined> {
-  const items = diagnostics.map((diagnostic) => ({
-    label: buildDiagnosticMessage(diagnostic),
-    description: `Line ${diagnostic.range.start.line + 1}`,
-    diagnostic,
-  }));
+interface DiagnosticPickItem extends vscode.QuickPickItem {
+  readonly diagnostic?: vscode.Diagnostic;
+  readonly all?: true;
+}
+
+async function pickDiagnostics(
+  diagnostics: readonly vscode.Diagnostic[],
+): Promise<vscode.Diagnostic[] | undefined> {
+  const items: DiagnosticPickItem[] = [
+    {
+      label: `$(checklist) Copy all ${diagnostics.length} diagnostics`,
+      description: "Bundle every diagnostic at this location",
+      all: true,
+    },
+    { label: "", kind: vscode.QuickPickItemKind.Separator },
+    ...diagnostics.map<DiagnosticPickItem>((diagnostic) => ({
+      label: buildDiagnosticMessage(diagnostic),
+      description: `Line ${diagnostic.range.start.line + 1}`,
+      diagnostic,
+    })),
+  ];
 
   const picked = await vscode.window.showQuickPick(items, {
-    placeHolder: "Select the diagnostic to copy",
+    placeHolder: "Select a diagnostic to copy, or copy all",
   });
 
-  return picked?.diagnostic;
+  if (!picked) {
+    return undefined;
+  }
+
+  if (picked.all) {
+    return [...diagnostics];
+  }
+
+  return picked.diagnostic ? [picked.diagnostic] : undefined;
 }
 
 function getDiagnosticCodeText(document: vscode.TextDocument, range: vscode.Range): string {

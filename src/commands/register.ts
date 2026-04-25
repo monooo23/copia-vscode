@@ -57,22 +57,31 @@ export function registerFileCommand(
   });
 }
 
+export interface DiagnosticFormatterResult {
+  readonly text: string;
+  readonly count: number;
+}
+
 export function registerDiagnosticCommand(
   command: string,
-  formatter: (uri?: vscode.Uri, target?: vscode.Range | vscode.Position) => Promise<string | undefined>,
+  formatter: (
+    uri?: vscode.Uri,
+    target?: vscode.Range | vscode.Position,
+  ) => Promise<DiagnosticFormatterResult | undefined>,
   statusMessage: string,
   statusBarFeedback: vscode.StatusBarItem,
 ): vscode.Disposable {
   return vscode.commands.registerCommand(
     command,
     async (uri?: vscode.Uri, target?: vscode.Range | vscode.Position) => {
-      const text = await formatter(uri, target);
-      if (!text) {
+      const result = await formatter(uri, target);
+      if (!result) {
         await showError("No diagnostic found at current position");
         return;
       }
 
-      await writeToClipboard(text, statusMessage, statusBarFeedback);
+      const message = result.count > 1 ? `${statusMessage} (${result.count})` : statusMessage;
+      await writeToClipboard(result.text, message, statusBarFeedback);
     },
   );
 }
