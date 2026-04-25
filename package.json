@@ -201,6 +201,46 @@
         "title": "Copy Diagnostic + Code",
         "category": "Copia",
         "enablement": "quickCopy.canCopyDiagnosticContext"
+      },
+      {
+        "command": "quickCopy.copyEnclosingSymbol",
+        "title": "Copy Enclosing Symbol",
+        "category": "Copia"
+      },
+      {
+        "command": "quickCopy.copyBundle",
+        "title": "Copy Bundle",
+        "category": "Copia"
+      },
+      {
+        "command": "quickCopy.stageAdd",
+        "title": "Stage: Add Selection or File",
+        "category": "Copia"
+      },
+      {
+        "command": "quickCopy.stageAddEnclosingSymbol",
+        "title": "Stage: Add Enclosing Symbol",
+        "category": "Copia"
+      },
+      {
+        "command": "quickCopy.stageAddFiles",
+        "title": "Stage: Add File(s)",
+        "category": "Copia"
+      },
+      {
+        "command": "quickCopy.stageCopy",
+        "title": "Stage: Copy All",
+        "category": "Copia"
+      },
+      {
+        "command": "quickCopy.stageClear",
+        "title": "Stage: Clear",
+        "category": "Copia"
+      },
+      {
+        "command": "quickCopy.stageManage",
+        "title": "Stage: Manage",
+        "category": "Copia"
       }
     ],
     "menus": {
@@ -256,6 +296,26 @@
           "command": "quickCopy.copyDiagnosticWithCode",
           "group": "3_diagnostic@2",
           "when": "quickCopy.canCopyDiagnosticContext"
+        },
+        {
+          "command": "quickCopy.copyEnclosingSymbol",
+          "group": "4_symbol@1"
+        },
+        {
+          "command": "quickCopy.stageAdd",
+          "group": "5_stage@1"
+        },
+        {
+          "command": "quickCopy.stageAddEnclosingSymbol",
+          "group": "5_stage@2"
+        },
+        {
+          "command": "quickCopy.stageCopy",
+          "group": "5_stage@3"
+        },
+        {
+          "command": "quickCopy.stageManage",
+          "group": "5_stage@4"
         }
       ],
       "explorer/context": [
@@ -283,6 +343,18 @@
         {
           "command": "quickCopy.copyAbsolutePath",
           "group": "1_core@3"
+        },
+        {
+          "command": "quickCopy.copyBundle",
+          "group": "2_bundle@1"
+        },
+        {
+          "command": "quickCopy.stageAddFiles",
+          "group": "3_stage@1"
+        },
+        {
+          "command": "quickCopy.stageCopy",
+          "group": "3_stage@2"
         }
       ]
     },

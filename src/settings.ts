@@ -54,3 +54,30 @@ export function getSettings(): CopiaSettings {
 export function shouldRefreshConfiguration(event: vscode.ConfigurationChangeEvent): boolean {
   return event.affectsConfiguration("copia");
 }
+
+export function getReferenceTemplateOptions(settings: CopiaSettings = getSettings()) {
+  return {
+    singleLineReferenceTemplate: settings.singleLineReferenceTemplate,
+    lineRangeReferenceTemplate: settings.lineRangeReferenceTemplate,
+    charRangeReferenceTemplate: settings.charRangeReferenceTemplate,
+  };
+}
+
+export function getReferenceOutputOptions(settings: CopiaSettings = getSettings()) {
+  return {
+    ...getReferenceTemplateOptions(settings),
+    surroundWithSpaces: settings.padCopiedPathsWithSpaces,
+    surroundWithBlankLines: settings.padCopiedContextWithBlankLines,
+  };
+}
+
+export function getPathOutputOptions(pathStyle: PathStyle, settings: CopiaSettings = getSettings()) {
+  return {
+    pathStyle,
+    surroundWithSpaces: settings.padCopiedPathsWithSpaces,
+  };
+}
+
+export function padContextOutput(text: string, settings: CopiaSettings = getSettings()): string {
+  return settings.padCopiedContextWithBlankLines ? `\n${text}\n` : text;
+}

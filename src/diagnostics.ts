@@ -9,7 +9,11 @@ import {
   getDisplayPath,
   getPathReference,
 } from "./formatters";
-import { DiagnosticCodeLensSeverity, getSettings } from "./settings";
+import {
+  DiagnosticCodeLensSeverity,
+  getReferenceTemplateOptions,
+  getSettings,
+} from "./settings";
 
 export interface DiagnosticFormatOptions {
   readonly maxCodeLines?: number;
@@ -289,12 +293,3 @@ function truncateDiagnosticCodeLensMessage(message: string, maxLength: number): 
   return `${message.slice(0, Math.max(0, maxLength - 1)).trimEnd()}…`;
 }
 
-function getReferenceTemplateOptions() {
-  const settings = getSettings();
-
-  return {
-    singleLineReferenceTemplate: settings.singleLineReferenceTemplate,
-    lineRangeReferenceTemplate: settings.lineRangeReferenceTemplate,
-    charRangeReferenceTemplate: settings.charRangeReferenceTemplate,
-  };
-}

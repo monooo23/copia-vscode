@@ -8,7 +8,9 @@ type SelectionActionCommand =
   | "quickCopy.copyFileName"
   | "quickCopy.copyPathWithLines"
   | "quickCopy.copyPathWithLinesAndChars"
-  | "quickCopy.copyContext";
+  | "quickCopy.copyContext"
+  | "quickCopy.copyEnclosingSymbol"
+  | "quickCopy.stageAdd";
 
 interface SelectionAction extends vscode.QuickPickItem {
   readonly label: string;
@@ -41,6 +43,16 @@ const SELECTION_ACTIONS: SelectionAction[] = [
     label: "$(clippy) Copy Context",
     description: "Reference plus code block",
     command: "quickCopy.copyContext",
+  },
+  {
+    label: "$(symbol-method) Copy Enclosing Symbol",
+    description: "Enclosing function or class as context",
+    command: "quickCopy.copyEnclosingSymbol",
+  },
+  {
+    label: "$(layers) Add to Stage",
+    description: "Append selection to the Copia stage",
+    command: "quickCopy.stageAdd",
   },
 ];
 
