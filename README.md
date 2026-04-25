@@ -1,81 +1,88 @@
-# Copia
+# Copia – Copy Context for AI
 
-Chinese README: `README.zh-CN.md`
+[中文 README](./README.zh-CN.md)
 
-Copy for AI from VS Code selections, diagnostics, and resources.
+Stop hand-copying file paths and line numbers for your AI prompts! **Copia** turns any code, selection, symbol, or diagnostic into the AI-friendly context format your assistant actually wants — and lets you stage snippets across files into one bundle for richer prompts.
 
-## Features
+> Built for the way you actually talk to Claude, Cursor, Copilot, and ChatGPT.
 
-Path & selection
-- `Copia: Copy File Name`
-- `Copia: Copy Relative Path`
-- `Copia: Copy Absolute Path`
-- `Copia: Copy Selection`
-- `Copia: Copy Path + Lines`
-- `Copia: Copy Path + Lines + Chars`
-- `Copia: Copy Context`
-- `Copia: Quick Copy Active Reference`
+## ✨ Features
 
-Symbol-aware
-- `Copia: Copy Enclosing Symbol` — copies the smallest enclosing function / method / class / interface / module as a `Copy Context` block, falling back to the deepest containing symbol when no preferred kind matches. Works for any language whose extension contributes a `DocumentSymbolProvider` (TypeScript / JavaScript / Markdown ship with VS Code; Python / Go / Rust / C++ / Java / etc. work once their language extension is installed).
+### 📋 Copy Anything in AI-Friendly Format
 
-Multi-file bundle
-- `Copia: Copy Bundle` — bundles one or more files (or the active editor) into a single AI-friendly block sequence, sharing the existing fence and `copia.maxCodeLines` truncation pipeline. Folders and binary resources are silently skipped.
+- **Selection context**: `file: @/src/app.ts#L24:7-L24:15` plus a fenced code block with the right language tag.
+- **Path + line range**: handy short references for "look at this region" prompts.
+- **Path-only / file name**: classic copies, polished defaults (workspace-relative `@/...` prefix).
+- **Quick Copy Active Reference**: one shortcut, your preferred mode (`copia.quickCopyActiveMode`).
 
-Diagnostics
-- `Copia: Copy Diagnostic`
-- `Copia: Copy Diagnostic + Code`
+### 🧠 Symbol-Aware Copy
 
-Stage (multi-step prompt assembly)
-- `Copia: Stage: Add Selection or File`
-- `Copia: Stage: Add Enclosing Symbol`
-- `Copia: Stage: Add File(s)`
-- `Copia: Stage: Copy All`
-- `Copia: Stage: Clear`
-- `Copia: Stage: Manage`
+- **`Copy Enclosing Symbol`** finds the smallest enclosing function / method / class / interface / module via VS Code's `DocumentSymbolProvider` and copies the entire symbol as a `Copy Context` block.
+- Works for **every language whose extension provides symbols** — TypeScript / JavaScript / Markdown ship with VS Code; Python / Go / Rust / C++ / Java / etc. work the moment their language extension is installed.
+- Falls back gracefully to the deepest containing symbol when no preferred kind matches (useful for Markdown headings, IaC, etc.).
 
-Stage is an in-memory queue that lets you accumulate selections, files, and symbols across the codebase before copying them as one bundle. While the stage is non-empty, a `$(layers) Copia +N` entry appears in the status bar; clicking it opens the Manage panel where you can review, remove, copy, or clear items.
+### 🪢 Multi-File Bundle
 
-## Trigger Modes
+- **`Copy Bundle`** packs multi-selected files (or the active editor) into a single AI-friendly block sequence — one `file: @/...` heading + fenced code block per file, separated by blank lines.
+- Shares the same fence and `copia.maxCodeLines` truncation pipeline as `Copy Context`. Folders and binary resources are skipped silently.
 
-- Selection actions
-  By default, select a non-empty single range to reveal a `Copia` status bar entry with selection actions and without shifting editor lines. The action menu also exposes `Copy Enclosing Symbol` and `Add to Stage`. You can switch to CodeLens or a pure hover overlay with `copia.selectionActionsUi`.
-- Diagnostic CodeLens
-  On a line with diagnostics, Copia shows `Copy Diagnostic`.
-- Editor context menu
-  Right-click inside the editor and use the `Copia` submenu — selection actions, `Copy Enclosing Symbol`, and the stage commands are grouped there.
-- Quick Fix / Code Action
-  On a diagnostic location, use the lightbulb menu for diagnostic copy actions.
-- Command Palette
-  Search for `Copia`.
-- Keyboard shortcut
-  Press `Option+L` / `Alt+L` to run `Copia: Copy Relative Path`. Press `Option+Command+L` on macOS or `Alt+Shift+L` on Windows and Linux to run `Copia: Copy Path + Lines` when a selection is active. These defaults can be changed in VS Code Keyboard Shortcuts.
-- Explorer / SCM context menu
-  Right-click files, folders, or selected resources and use `Copia > Copy File Name`, `Copy Relative Path`, `Copy Absolute Path`, `Copy Bundle`, `Stage: Add File(s)`, or `Stage: Copy All`.
-- Stage status bar
-  Click `$(layers) Copia +N` (only visible when the stage is non-empty) to open the Manage panel.
+### 🩺 Diagnostic Copy with Code
 
-## Usage
+- **`Copy Diagnostic`** / **`Copy Diagnostic + Code`** — copy `severity source(code): message` plus the offending code, all behind one click on the diagnostic CodeLens or Quick Fix.
+- When multiple diagnostics share a location, the disambig QuickPick offers a **Copy all N diagnostics** entry that bundles every diagnostic in one go.
 
-- In the editor, select some code to reveal the `Copia` selection actions entry in the status bar.
-- You can also open the editor context menu to use `Copia`.
-- In Explorer or SCM, right-click one or more resources and use `Copia > Copy File Name`, `Copy Relative Path`, `Copy Absolute Path`, or `Copy Bundle` to pack selected files into a single AI-friendly block sequence.
-- Place the cursor inside a function / class and run `Copia: Copy Enclosing Symbol` (or pick it from the selection action menu) to copy the entire enclosing symbol as a `Copy Context` block.
-- On a diagnostic location, use the lightbulb / Quick Fix menu or run `Copia: Copy Diagnostic` or `Copia: Copy Diagnostic + Code` from the Command Palette.
-- Press `Option+L` / `Alt+L` to quickly copy the current file's relative path.
-- Press `Option+Command+L` on macOS or `Alt+Shift+L` on Windows / Linux to copy `Path + Lines` for the current selection.
-- Run `Copia: Quick Copy Active Reference` from the Command Palette, or bind your own shortcut, to use `copia.quickCopyActiveMode`.
+### 🪄 Stage: Build Multi-Snippet Prompts Incrementally
 
-### Stage workflow
+The stage is an in-memory queue that accumulates **selections, files, and symbols across the codebase** before copying them as one big bundle. The killer feature when your AI prompt needs context from several places.
+
+- `Stage: Add Selection or File` / `Add Enclosing Symbol` / `Add File(s)` to push.
+- A `$(layers) Copia +N` status bar entry shows the count and opens the Manage panel.
+- `Stage: Copy All` flushes everything as a single clipboard write, separated by blank lines.
+- `Stage: Manage` lets you review, remove, copy, or clear items.
+
+### 🎯 Configurable & Discoverable
+
+- Selection actions surface as **status bar entry** (default), **CodeLens**, **hover overlay**, or off — your choice.
+- Three **fully customizable reference templates**: single-line, line-range, char-range.
+- Diagnostic CodeLens with severity filter (`error` / `errorAndWarning` / `all`).
+- Code block truncation with `copia.maxCodeLines` (default 5; `0` disables).
+
+## 🚀 Quick Start
+
+1. **Install** Copia from the VS Code Marketplace.
+2. **Select some code** in any file. A `$(copy) Copia` entry appears in the status bar — click it for a menu of all selection actions, or just right-click to use the `Copia` submenu.
+3. **Try `Copy Context`**. The clipboard now contains the file reference plus a fenced code block, ready to paste into Claude / Cursor / Copilot / ChatGPT.
+4. **Want more context?** Hit `Stage: Add Selection or File`, jump to another file, hit it again, then `Stage: Copy All` — both snippets land in the clipboard as one bundle.
+
+That's the whole product. The rest is just polish.
+
+## 🎬 Trigger Modes
+
+Copia exposes its commands through every native VS Code surface so you never have to memorize a path:
+
+| Surface | What you get |
+|---|---|
+| **Status bar selection actions** | `$(copy) Copia` appears when you make a selection. Click for a QuickPick of every selection action, including `Copy Enclosing Symbol` and `Add to Stage`. Toggle with `copia.selectionActionsUi` to `codeLens`, `hover`, or `off`. |
+| **Stage status bar** | `$(layers) Copia +N` appears whenever the stage is non-empty. Click to manage. |
+| **Editor context menu** | Right-click → `Copia` submenu groups selection actions, `Copy Enclosing Symbol`, and stage commands. |
+| **Diagnostic CodeLens** | Lines with diagnostics show `$(error) Copy Diagnostic` directly above the code. Severity filter via `copia.diagnosticCodeLensSeverity`. |
+| **Quick Fix / Code Action** | Lightbulb on a diagnostic offers `Copia: Copy Diagnostic` and `Copy Diagnostic + Code`. |
+| **Explorer / SCM context menu** | Right-click files (or multi-selected resources) → `Copia` submenu for path / bundle / stage actions. |
+| **Command Palette** | Search `Copia`. |
+| **Keyboard shortcuts** | `Option+L` / `Alt+L` for relative path. `Option+Command+L` (macOS) / `Alt+Shift+L` (Win/Linux) for `Path + Lines` when a selection is active. Bind anything else yourself. |
+
+## 🪄 Stage Workflow
 
 The stage is the recommended way to compose AI prompts that need context from several places.
 
-1. Run `Copia: Stage: Add Selection or File` (or `Add to Stage` from the selection action menu) to push the current selection / file. Use `Stage: Add Enclosing Symbol` to push the enclosing function / class instead, and `Stage: Add File(s)` from the Explorer context menu to push one or more whole files.
-2. Watch the `$(layers) Copia +N` status bar entry update with the staged count.
-3. When you are done collecting context, run `Copia: Stage: Copy All` (or click the status bar entry and pick `Copy Stage`) to copy everything as one bundle, separated by blank lines.
-4. Use `Copia: Stage: Manage` to review staged items, remove individual entries, or clear the queue. The stage lives in memory only — it resets when the window reloads.
+1. **Push** — `Copia: Stage: Add Selection or File` (or `Add to Stage` from the selection action menu) pushes the current selection / file. Use `Stage: Add Enclosing Symbol` to push the enclosing function / class, and `Stage: Add File(s)` from the Explorer context menu to push whole files.
+2. **Track** — `$(layers) Copia +N` in the status bar updates with the count.
+3. **Flush** — `Copia: Stage: Copy All` (or click the status bar entry and pick `Copy Stage`) copies everything as one bundle, separated by blank lines.
+4. **Manage** — `Copia: Stage: Manage` lets you review items, remove entries one by one, or clear the queue.
 
-## Output Formats
+The stage lives in memory only — reloading the window resets it.
+
+## 📤 Output Formats
 
 `Copy Path + Lines` uses this shape:
 
@@ -118,7 +125,7 @@ export const b = 2;
 
 `Stage: Copy All` produces the same shape: each staged item is concatenated in insertion order, separated by blank lines.
 
-## Settings
+## ⚙️ Settings
 
 - `copia.maxCodeLines`
   Maximum number of lines kept in `Copy Context` and `Copy Diagnostic + Code`. Default: `5`. Set to `0` to disable truncation.
@@ -195,7 +202,7 @@ Full settings example:
 }
 ```
 
-## Validation Checklist
+## ✅ Validation Checklist
 
 - Selection
   Select a single range and confirm the `Copia` status bar entry appears without shifting the editor. Toggle `copia.selectionActionsUi` through `codeLens` and `hover` and confirm each mode surfaces the actions as expected.
@@ -226,13 +233,14 @@ Full settings example:
 - SCM
   Right-click changed files in SCM and verify `Copy File Name`, `Copy Relative Path`, and `Copy Absolute Path`.
 
-## Known Limits
+## 📌 Known Limits
 
-- Multi-selection copy is not supported yet.
-- Rich floating toolbars are not implemented; Copia uses VS Code-native entry points and CodeLens.
-- Explorer / SCM multi-select behavior should still be verified in a live Extension Host across more repository shapes.
+- Multi-cursor / multi-selection copy is not supported yet (only the primary selection is used).
+- The stage is in-memory only and resets when the window reloads.
+- `Copy Bundle` skips folders and binary resources silently — it ships only readable files.
+- Rich floating toolbars are not implemented; Copia uses VS Code-native entry points (status bar / CodeLens / hover / context menus / Quick Fix).
 
-## Development
+## 🛠️ Development
 
 ```bash
 npm install
@@ -240,10 +248,12 @@ npm run compile
 npm test
 ```
 
-Then press `F5` in VS Code to launch the extension host.
+Then press `F5` in VS Code to launch the extension host. Available scripts: `npm: compile`, `npm: watch`, `npm: check`, `npm test`.
 
-Available workspace tasks:
+## 🔗 More from sharten
 
-- `npm: compile`
-- `npm: watch`
-- `npm: check`
+- **[Linker – Smart Code Linking](https://marketplace.visualstudio.com/items?itemName=sharten.linker)** — turn any text in your code into a clickable link to docs, files, APIs, or tickets through simple JSON config.
+
+---
+
+**Stop hand-copying paths and line numbers — let Copia ship clean context to your AI in one click.** 🚀

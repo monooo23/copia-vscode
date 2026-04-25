@@ -1,25 +1,66 @@
 {
   "name": "copia-vscode",
-  "displayName": "Copia",
-  "description": "Copy for AI from VS Code selections, diagnostics, and resources.",
+  "displayName": "Copia - Copy Context for AI",
+  "description": "Stop hand-copying file paths and line numbers for your AI prompts! Copy selections, symbols, diagnostics, and multi-file bundles in AI-friendly formats. Stage snippets across files into one bundle for richer context.",
   "version": "0.0.1",
   "publisher": "sharten",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/monooo23/copia-vscode.git"
+    "url": "https://github.com/monooo23/copia-vscode"
   },
+  "homepage": "https://github.com/monooo23/copia-vscode#readme",
+  "bugs": {
+    "url": "https://github.com/monooo23/copia-vscode/issues"
+  },
+  "qna": "marketplace",
   "icon": "media/icon.png",
+  "galleryBanner": {
+    "color": "#7B61FF",
+    "theme": "dark"
+  },
   "engines": {
-    "vscode": "^1.115.0"
+    "vscode": "^1.85.0"
   },
   "categories": [
-    "Other"
+    "Other",
+    "Snippets"
+  ],
+  "keywords": [
+    "ai",
+    "claude",
+    "copilot",
+    "chatgpt",
+    "cursor",
+    "copy",
+    "context",
+    "reference",
+    "snippet",
+    "clipboard",
+    "code-context",
+    "ai-prompt",
+    "prompt",
+    "file-path",
+    "line-number",
+    "diagnostic",
+    "error-message",
+    "developer-tools",
+    "productivity",
+    "code-share"
   ],
   "activationEvents": [
     "onStartupFinished"
   ],
   "main": "./dist/extension.js",
+  "files": [
+    "dist/**/*",
+    "media/**/*",
+    "README.md",
+    "README.zh-CN.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "package.json"
+  ],
   "contributes": {
     "configuration": {
       "title": "Copia",
@@ -382,7 +423,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.5.2",
-    "@types/vscode": "^1.115.0",
+    "@types/vscode": "~1.85.0",
     "typescript": "^6.0.2"
   }
 }
