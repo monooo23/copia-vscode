@@ -1,6 +1,7 @@
 .gitignore
 .vscodeignore
 .vscode/**
+.claude/**
 .DS_Store
 **/.DS_Store
 node_modules/**
