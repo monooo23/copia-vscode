@@ -98,20 +98,19 @@ file: @/src/example.ts#L3:1-L5:12
 
 `Copy Context` and `Copy Diagnostic + Code` use this shape:
 
-```text
+````text
 file: @/src/example.ts#L3:1-L5:12
-```
-
 ```ts
 const value = getValue();
 console.log(value);
 ```
+````
 
 If the copied code is long, the extension only keeps the first 5 lines by default and appends a fold-style hint such as `... 85 more lines`. You can change this with `copia.maxCodeLines`, or set it to `0` to disable truncation.
 
 `Copy Bundle` joins one block per file with a blank line in between:
 
-```text
+````text
 file: @/src/a.ts
 ```ts
 export const a = 1;
@@ -121,7 +120,7 @@ file: @/src/b.ts
 ```ts
 export const b = 2;
 ```
-```
+````
 
 `Stage: Copy All` produces the same shape: each staged item is concatenated in insertion order, separated by blank lines.
 

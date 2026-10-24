@@ -98,20 +98,19 @@ file: @/src/example.ts#L3:1-L5:12
 
 `Copy Context` 和 `Copy Diagnostic + Code` 默认输出：
 
-```text
+````text
 file: @/src/example.ts#L3:1-L5:12
-```
-
 ```ts
 const value = getValue();
 console.log(value);
 ```
+````
 
 如果复制的代码过长，默认只保留前 5 行，并在末尾追加类似 `... 85 more lines` 的折叠提示。可以通过 `copia.maxCodeLines` 修改；设为 `0` 表示不截断。
 
 `Copy Bundle` 把每个文件拼成一段，段间用空行分隔：
 
-```text
+````text
 file: @/src/a.ts
 ```ts
 export const a = 1;
@@ -121,7 +120,7 @@ file: @/src/b.ts
 ```ts
 export const b = 2;
 ```
-```
+````
 
 `Stage: Copy All` 输出格式相同：每个 staged 条目按加入顺序拼接，段间一行空行。
 
